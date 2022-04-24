@@ -35,12 +35,13 @@ app.use('/static', express.static(path.join(__dirname, '/../static')));
 
 /* Endpoints
 
+GET /api/TradablePairs [optional:pairs] Get all tradable pairs or optionally limit to specific pairs
 
 */
 
 //Include other source files
 let util = require(__dirname + '/Utility.js');
-//require(__dirname + "/AssetInfo.js")(app, pool, util);
+require("./AssetInfo.js")(app, pool, util);
 
 app.get('/', function(request, response) {
 	response.redirect("/login.html");
@@ -85,7 +86,6 @@ app.post('/auth', async function(request, response) {
 });
 
 
-// http://localhost:3000/private/
 app.use('/react', function(request, response) {
     // If the user is loggedin
     if (request.session.loggedin) {
