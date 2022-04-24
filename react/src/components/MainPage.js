@@ -1,6 +1,8 @@
 import React, { Component, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import NavigationBar from './NavigationBar';
+
 class MainPage extends Component {
 	constructor(props) {
 		super(props)
@@ -10,9 +12,12 @@ class MainPage extends Component {
 
 	render() {
 		return (
+		<div className="MainPage">
+			<NavigationBar currentpage="MainPage"/>
 			<p>
-				<Link to="/TradablePairsInfo">View Tradable Pairs</Link>
+				This is the main page
 			</p>
+		</div>
 		);
 	}
 }
