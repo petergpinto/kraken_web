@@ -1,12 +1,15 @@
 import React from 'react';
 import { Routes, BrowserRouter as Router, Route } from 'react-router-dom';
 
+import MainPage from './MainPage';
+import TradablePairsInfo from './TradablePairsInfo';
 
 const App = () => {
   return (
-    <Router>
+    <Router basename='/react'>
         <Routes>
-          <Route path="/react/" element={<p>TEST</p>} />
+          <Route path="/" element={<MainPage/>} />
+		  <Route path="/TradablePairsInfo" element={<TradablePairsInfo/>} />
         </Routes>
     </Router>
   );
