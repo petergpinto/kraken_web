@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-	"build": "webpack"
+    "build": "webpack"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +19,7 @@
   "dependencies": {
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-react": "^7.16.7",
+    "apexcharts": "^3.35.0",
     "babel-loader": "^8.2.3",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
@@ -26,6 +27,7 @@
     "file-loader": "^6.2.0",
     "lodash": "^4.17.21",
     "react": "^17.0.2",
+    "react-apexcharts": "^1.4.0",
     "react-folder-tree": "^5.0.3",
     "react-markdown": "^8.0.0",
     "react-router-dom": "^6.2.1",
