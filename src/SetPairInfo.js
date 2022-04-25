@@ -1,5 +1,5 @@
 module.exports = function (app, pool, util) {
-	app.post("SetTradingStatus", async function(request, response) {
+	app.post("/api/SetTradingStatus", async function(request, response) {
 		if(!request.session.loggedin) {
             response.json({"Result":"Error, please login"})
             return
@@ -14,7 +14,7 @@ module.exports = function (app, pool, util) {
 
 		updateStatusPromise = () => {
 			return new Promise ((resolve, reject) => {
-				pool.query("UPDATE trading_pairs SET doTrading=? WHERE pair=?", [pairStatus, pair],
+				pool.query("UPDATE tradable_pairs SET doTrading=? WHERE pair=?", [pairStatus, pair],
 					(error, elements) => {
 						if(error) return resolve(false);
 						return resolve(true);
@@ -29,3 +29,4 @@ module.exports = function (app, pool, util) {
 		else
 			response.json({"Result":"Failure"});
 	})
+}
