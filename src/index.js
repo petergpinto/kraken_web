@@ -43,6 +43,7 @@ GET /api/TradablePairs [optional:pairs] Get all tradable pairs or optionally lim
 let util = require(__dirname + '/Utility.js');
 require("./AssetInfo.js")(app, pool, util);
 require("./SetPairInfo.js")(app, pool, util);
+require("./OHLC.js")(app, pool, util);
 
 app.get('/', function(request, response) {
 	response.redirect("/login.html");
