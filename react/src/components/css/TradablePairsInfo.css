@@ -1,0 +1,30 @@
+.TradablePairsTable {
+	text-align:center;
+}
+
+.TradablePairsTable table, .TradablePairsTable td, .TradablePairsTable th{
+	border:1px solid black;
+	padding:5px;
+	margin:5px;
+}
+
+.TradablePairsTable table {
+	background:inherit;
+}
+
+.TradablePairsTable td, .TradablePairsTable th{
+	background:white;
+}
+
+.TradablePairsInfo {
+	background:skyblue;
+	
+}
+
+.PairsTableContainer {
+	display: flex;
+	flex-direction: column;
+	margin-left: 5vw;
+	margin-right: 5vw;
+	padding:10px;
+}
