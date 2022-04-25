@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 
 import NavigationBar from './NavigationBar';
 
+import './css/TradablePairsInfo.css';
+
 class TradablePairsInfo extends Component {
 	constructor(props) {
 		super(props)
@@ -10,8 +12,11 @@ class TradablePairsInfo extends Component {
 		this.getAllTradablePairs = this.getAllTradablePairs.bind(this);
 		this.renderTradablePairs = this.renderTradablePairs.bind(this);
 		this.getPairsKeys = this.getPairsKeys.bind(this);
+		this.updateKeywordFilter = this.updateKeywordFilter.bind(this);
 
-		this.state = { pairs:[] };
+		this.state = { pairs:[],
+			keywordFilter:""
+		};
 	}
 
 	getAllTradablePairs() {
@@ -24,6 +29,21 @@ class TradablePairsInfo extends Component {
 		.then( json => {
 			this.setState({pairs:json});
 		});
+	}
+
+	setTradingStatus(event) {
+		let data = new URLSearchParams();
+		data.append("pair", event.target.getAttribute("pair"));
+		if(event.target.checked)
+			data.append("pairStatus", 1);
+		else
+			data.append("pairStatus", 0);
+		return fetch(window.origin + '/api/SetTradingStatus', {
+			method: "POST",
+			headers: {
+				'Accept':'application/json'
+			}, body:data
+			}).then(res => res.json())
 	}
 
 	getPairsKeys() {
@@ -52,8 +72,25 @@ class TradablePairsInfo extends Component {
 		})
 	}
 
+	handleCheckboxChange(event) {
+		console.log(event.target.getAttribute("pair"))
+	}
+
+	updateKeywordFilter(event) {
+        this.setState({ keywordFilter: event.target.value })
+    }
+
 	renderTradablePairsRow() {
 		let items = this.state.pairs;
+
+		let keywordFilter = this.state.keywordFilter;
+		items = items.filter( function(el) {
+			if(el.pair && el.base) {
+				return el.pair.toLowerCase().includes(keywordFilter.toLowerCase()) || el.base.toLowerCase().includes(keywordFilter.toLowerCase());
+			} else 
+				return true;
+		});
+
 
 		return items.map((row, index) => {
 			return <tr>
@@ -61,7 +98,7 @@ class TradablePairsInfo extends Component {
 				<td>{row.orderMin}</td>
 				<td>{row.base}</td>
 				<td>{row.altname}</td>
-				<td>{row.doTrading? "Yes":"No"}</td>
+				<td><input type="checkbox" pair={row.pair} defaultChecked={row.doTrading? true:false} onChange={this.setTradingStatus}/></td>
 			</tr>
 		})
 	}
@@ -69,9 +106,13 @@ class TradablePairsInfo extends Component {
 	renderTradablePairs() {
 		let pairs = this.state.pairs;
 		return (
-			<table>
-			<tr>{this.renderTradablePairsHeader()}</tr>
-			{this.renderTradablePairsRow()}
+			<table className="TradablePairsTable">
+				<thead>
+					<tr>{this.renderTradablePairsHeader()}</tr>
+				</thead>
+				<tbody>
+					{this.renderTradablePairsRow()}
+				</tbody>
 			</table>
 		);
 	}
@@ -84,12 +125,15 @@ class TradablePairsInfo extends Component {
 		return (
 		<div className="TradablePairsInfo">
 			<NavigationBar currentpage="TradablePairsInfo"/>
-			<div>
+			<div className="PairsTableContainer">
+				<input type="text" onChange={this.updateKeywordFilter} />
 				{this.renderTradablePairs()}
 			</div>
 		</div>
 		);
 	}
 }
+
+
 
 export default TradablePairsInfo;
