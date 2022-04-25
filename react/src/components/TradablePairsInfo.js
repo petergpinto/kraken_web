@@ -2,6 +2,7 @@ import React, { Component, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import NavigationBar from './NavigationBar';
+import AssetPairCandleChart from './AssetPairCandleChart';
 
 import './css/TradablePairsInfo.css';
 
@@ -13,9 +14,20 @@ class TradablePairsInfo extends Component {
 		this.renderTradablePairs = this.renderTradablePairs.bind(this);
 		this.getPairsKeys = this.getPairsKeys.bind(this);
 		this.updateKeywordFilter = this.updateKeywordFilter.bind(this);
+		this.updateBaseFilter = this.updateBaseFilter.bind(this);
+		this.updateDoTradingFilter = this.updateDoTradingFilter.bind(this);
+		this.setTradingStatus = this.setTradingStatus.bind(this);
+		this.renderBaseFilterSelectOptions = this.renderBaseFilterSelectOptions.bind(this);
+		this.renderFilteringOptions = this.renderFilteringOptions.bind(this);
+		this.setCandleChartVisible = this.setCandleChartVisible.bind(this);
 
 		this.state = { pairs:[],
-			keywordFilter:""
+			keywordFilter:"",
+			baseFilter:"",
+			doTradingFilter:-1,
+			pairChecked: {},
+			bases:[],
+			showCandleChart: []
 		};
 	}
 
@@ -28,10 +40,14 @@ class TradablePairsInfo extends Component {
 		}).then(res => res.json())
 		.then( json => {
 			this.setState({pairs:json});
+			let bases = Object.entries(json).map((element) => { return element[1].base});
+			let uniqueBases = bases.filter((v, i, a) => a.indexOf(v) === i);
+			this.setState({bases:uniqueBases});
 		});
 	}
 
 	setTradingStatus(event) {
+		
 		let data = new URLSearchParams();
 		data.append("pair", event.target.getAttribute("pair"));
 		if(event.target.checked)
@@ -43,7 +59,22 @@ class TradablePairsInfo extends Component {
 			headers: {
 				'Accept':'application/json'
 			}, body:data
-			}).then(res => res.json())
+			}).then(res => {
+				return res.json()
+			})
+			.then(json => {
+				if(json.Result == "Success") {
+					this.setState((prevState) => {
+                    	return {
+                        	...prevState,
+                        	pairChecked: {
+                            	...prevState.pairChecked,
+                            	[event.target.getAttribute("pair")] : event.target.checked
+                        	}
+                    	}
+                	})
+				}
+			})
 	}
 
 	getPairsKeys() {
@@ -72,35 +103,140 @@ class TradablePairsInfo extends Component {
 		})
 	}
 
-	handleCheckboxChange(event) {
-		console.log(event.target.getAttribute("pair"))
-	}
-
 	updateKeywordFilter(event) {
         this.setState({ keywordFilter: event.target.value })
     }
+
+	updateBaseFilter(event) {
+		this.setState({ baseFilter: event.target.value });
+	}
+
+	updateDoTradingFilter(event) {
+		this.setState({ doTradingFilter: event.target.value });
+	}
 
 	renderTradablePairsRow() {
 		let items = this.state.pairs;
 
 		let keywordFilter = this.state.keywordFilter;
 		items = items.filter( function(el) {
-			if(el.pair && el.base) {
-				return el.pair.toLowerCase().includes(keywordFilter.toLowerCase()) || el.base.toLowerCase().includes(keywordFilter.toLowerCase());
+			if(el.pair) {
+				return el.pair.toLowerCase().includes(keywordFilter.toLowerCase());
 			} else 
 				return true;
 		});
 
+		let baseFilter = this.state.baseFilter;
+		items = items.filter( function(el) {
+			if(el.base) {
+				return el.base.toLowerCase().includes(baseFilter.toLowerCase());
+			} else {
+				return true;
+			}
+		});
+
+		let doTradingFilter = this.state.doTradingFilter;
+		let pairChecked = this.state.pairChecked;
+		items = items.filter( function(el) {
+			if(doTradingFilter == -1)
+				return true;
+			if(pairChecked[el.pair] != doTradingFilter)
+				return true;
+			return false;
+		});
+
 
 		return items.map((row, index) => {
-			return <tr>
-				<td>{row.pair}</td>
+			if(this.state.pairChecked[row.pair] == null) {
+				this.setState((prevState) => {
+					return {
+						...prevState,
+						pairChecked: {
+							...prevState.pairChecked,
+							[row.pair] : !prevState.pairChecked[row.pair]
+						}
+					}
+				})
+				this.state.pairChecked[row.pair] = row.doTrading;
+			}
+			if(this.state.showCandleChart[row.pair] == null) {
+				this.setState((prevState) => {
+					return {
+						...prevState,
+						showCandleChart: {
+							...prevState.showCandleChart,
+							[row.pair] : false
+						}
+					}
+				})
+			}
+
+			let html = []
+			html.push(<tr>
+				<td><a onClick={this.setCandleChartVisible} value={row.pair}>{row.pair}</a></td>
 				<td>{row.orderMin}</td>
 				<td>{row.base}</td>
 				<td>{row.altname}</td>
-				<td><input type="checkbox" pair={row.pair} defaultChecked={row.doTrading? true:false} onChange={this.setTradingStatus}/></td>
-			</tr>
+				<td><input type="checkbox" pair={row.pair} checked={this.state.pairChecked[row.pair]? false:true} onChange={this.setTradingStatus}/></td>
+			</tr> 
+			);
+			console.log(this.state.showCandleChart[row.pair]);
+			if(this.state.showCandleChart[row.pair]) {
+				html.push(<AssetPairCandleChart pairid={row.id} />);
+			}	
+			return html;
 		})
+	}
+
+	setCandleChartVisible(event) {
+		event.preventDefault();
+		console.log(event.target.getAttribute("value"));
+		this.setState((prevState) => {
+			return {
+				...prevState,
+				showCandleChart: {
+					...prevState.showCandleChart,
+					[event.target.getAttribute("value")] : !prevState.showCandleChart[event.target.getAttribute("value")]
+				}
+			}
+		});
+	}
+
+	renderCandleChart() {
+
+	}
+
+	renderBaseFilterSelectOptions() {
+		let items = this.state.bases;
+		return items.map((base) => {
+			return <option value={base}>{base}</option>;
+		})
+	}
+
+	renderFilteringOptions() {
+		let html = []
+		html.push(
+			<tr>
+				<td><input type="text" onChange={this.updateKeywordFilter} /></td>
+				<td></td>
+				<td>
+					<select onChange={this.updateBaseFilter}>
+						<option value="">All</option>
+						{this.renderBaseFilterSelectOptions()}
+					</select>
+				</td>
+				<td></td>
+				<td>
+					<select onChange={this.updateDoTradingFilter}>
+						<option value={-1}>All</option>
+						<option value={0}>No</option>
+						<option value={1}>Yes</option>
+					</select>
+				</td>
+			</tr>
+		);
+
+		return html;
 	}
 
 	renderTradablePairs() {
@@ -108,6 +244,7 @@ class TradablePairsInfo extends Component {
 		return (
 			<table className="TradablePairsTable">
 				<thead>
+					{this.renderFilteringOptions()}
 					<tr>{this.renderTradablePairsHeader()}</tr>
 				</thead>
 				<tbody>
@@ -126,7 +263,6 @@ class TradablePairsInfo extends Component {
 		<div className="TradablePairsInfo">
 			<NavigationBar currentpage="TradablePairsInfo"/>
 			<div className="PairsTableContainer">
-				<input type="text" onChange={this.updateKeywordFilter} />
 				{this.renderTradablePairs()}
 			</div>
 		</div>
