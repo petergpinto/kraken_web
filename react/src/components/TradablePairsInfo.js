@@ -20,6 +20,7 @@ class TradablePairsInfo extends Component {
 		this.renderBaseFilterSelectOptions = this.renderBaseFilterSelectOptions.bind(this);
 		this.renderFilteringOptions = this.renderFilteringOptions.bind(this);
 		this.setCandleChartVisible = this.setCandleChartVisible.bind(this);
+		this.hideAllCandleCharts = this.hideAllCandleCharts.bind(this)
 
 		this.state = { pairs:[],
 			keywordFilter:"",
@@ -103,16 +104,27 @@ class TradablePairsInfo extends Component {
 		})
 	}
 
+	hideAllCandleCharts() {
+		let hide = this.state.showCandleChart;
+		for (let i in hide) {
+			hide[i] = false;
+		}
+		this.setState({ showCandleChart:hide });
+	}
+
 	updateKeywordFilter(event) {
         this.setState({ keywordFilter: event.target.value })
+		this.hideAllCandleCharts();
     }
 
 	updateBaseFilter(event) {
 		this.setState({ baseFilter: event.target.value });
+		this.hideAllCandleCharts();
 	}
 
 	updateDoTradingFilter(event) {
 		this.setState({ doTradingFilter: event.target.value });
+		this.hideAllCandleCharts();
 	}
 
 	renderTradablePairsRow() {
