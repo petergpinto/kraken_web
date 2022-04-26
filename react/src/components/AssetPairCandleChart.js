@@ -57,6 +57,25 @@ class AssetPairCandleChart extends Component {
 		data.append("pairId", this.props.pairid);
 		if(ls.get(this.props.pairid+"ChartData")) {
 			this.setState({
+                    options : {
+                        title: { text:this.props.title },
+                        axisY: {
+                            includeZero:false,
+                            title:"Prices"
+                        },
+                        axisX: {
+                            interval:1,
+                            valueFormatString:"MMM-DD"
+                        },
+                        data:[ {
+                            type: 'ohlc',
+                            color:'brown',
+                            dataPoints: ls.get(this.props.pairid+"ChartData")
+                        }]
+                    }
+                });
+
+			this.setState({
 				series: [{
 					data: ls.get(this.props.pairid+"ChartData")	
 				}]
@@ -81,7 +100,6 @@ class AssetPairCandleChart extends Component {
 						y: [entries[i].open, entries[i].high, entries[i].low, entries[i].close]
 					})
 				}
-				console.log(s);
 				this.setState({
 					series: [{
 						data:s
