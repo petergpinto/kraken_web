@@ -89,13 +89,22 @@ class TradablePairsInfo extends Component {
 		let keys = this.getPairsKeys();
 		return keys.map((key, index) => {
 			if(key == 'pair')
-				return <th>Pair</th>
+				return <th>Pair: <input type="text" onChange={this.updateKeywordFilter} /></th>
 			if(key == 'base')
-				return <th>Base</th>
+				return <th>Base: <select onChange={this.updateBaseFilter}>
+                        	<option value="">All</option>
+                        	{this.renderBaseFilterSelectOptions()}
+                    	</select>
+					</th>
 			if(key == 'altname')
 				return <th>Alt Name</th>
 			if(key == 'doTrading')
-				return <th>Do Trading?</th>
+				return <th>Do Trading? <select onChange={this.updateDoTradingFilter}>
+                        		<option value={-1}>All</option>
+                        		<option value={0}>No</option>
+                        		<option value={1}>Yes</option>
+                    		</select>
+						</th>
 			if(key == 'orderMin')
 				return <th>Minimum Order</th>
 			if(key == 'id')
@@ -256,7 +265,6 @@ class TradablePairsInfo extends Component {
 		return (
 			<table className="TradablePairsTable">
 				<thead>
-					{this.renderFilteringOptions()}
 					<tr>{this.renderTradablePairsHeader()}</tr>
 				</thead>
 				<tbody>
