@@ -194,7 +194,7 @@ class TradablePairsInfo extends Component {
 			);
 			console.log(this.state.showCandleChart[row.pair]);
 			if(this.state.showCandleChart[row.pair]) {
-				html.push(<td colspan={5}><AssetPairCandleChart pairid={row.id} /></td>);
+				html.push(<td colSpan={5}><AssetPairCandleChart pairid={row.id} /></td>);
 			}	
 			return html;
 		})
