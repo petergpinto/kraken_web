@@ -1,6 +1,7 @@
 import React, { Component, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ls from 'local-storage';
+import {CanvasJSChart} from 'canvasjs-react-charts'
 
 import Chart from 'react-apexcharts';
 
@@ -18,6 +19,7 @@ class AssetPairCandleChart extends Component {
 
 		this.state = {
 			loading:true,
+			data: [],
 			series: [{
 				data:[ ]
 			}],
@@ -79,10 +81,29 @@ class AssetPairCandleChart extends Component {
 						y: [entries[i].open, entries[i].high, entries[i].low, entries[i].close]
 					})
 				}
+				console.log(s);
 				this.setState({
 					series: [{
 						data:s
 					}]
+				});
+				this.setState({
+					options : {
+						title: { text:this.props.title },
+						axisY: {
+							includeZero:false,
+							title:"Prices"
+						},	
+						axisX: {
+							interval:1,
+							valueFormatString:"MMM-DD"
+						},
+						data:[ {
+							type: 'ohlc',
+							color:'brown',
+							dataPoints: s
+						}]
+					}
 				});
 				this.setState({ loading:false });
 				ls.set(this.props.pairid+"ChartData", s);
@@ -108,7 +129,8 @@ class AssetPairCandleChart extends Component {
 
 		return (
 			<div>
-				<Chart options={this.state.options} series={this.state.series} type="candlestick" />
+				<CanvasJSChart options={this.state.options} />
+				{false? <Chart options={this.state.options} series={this.state.series} type="candlestick" /> : null }
 			</div>
 		);
 	}
@@ -139,5 +161,6 @@ const Loader = (props) => (
     </path>
   </svg>
 ) 
+
 
 export default AssetPairCandleChart;
