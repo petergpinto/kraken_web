@@ -25,7 +25,7 @@ class TradablePairsInfo extends Component {
 		this.state = { pairs:[],
 			keywordFilter:"",
 			baseFilter:"",
-			doTradingFilter:-1,
+			doTradingFilter:1,
 			pairChecked: {},
 			bases:[],
 			showCandleChart: []
@@ -100,9 +100,9 @@ class TradablePairsInfo extends Component {
 				return <th>Alt Name</th>
 			if(key == 'doTrading')
 				return <th>Do Trading? <select onChange={this.updateDoTradingFilter}>
+								<option value={1}>Yes</option>
                         		<option value={-1}>All</option>
                         		<option value={0}>No</option>
-                        		<option value={1}>Yes</option>
                     		</select>
 						</th>
 			if(key == 'orderMin')
@@ -201,7 +201,6 @@ class TradablePairsInfo extends Component {
 				<td><input type="checkbox" pair={row.pair} checked={this.state.pairChecked[row.pair]? false:true} onChange={this.setTradingStatus}/></td>
 			</tr> 
 			);
-			console.log(this.state.showCandleChart[row.pair]);
 			if(this.state.showCandleChart[row.pair]) {
 				html.push(<td colSpan={5}><AssetPairCandleChart pairid={row.id} /></td>);
 			}	
@@ -211,7 +210,6 @@ class TradablePairsInfo extends Component {
 
 	setCandleChartVisible(event) {
 		event.preventDefault();
-		console.log(event.target.getAttribute("value"));
 		this.setState((prevState) => {
 			return {
 				...prevState,

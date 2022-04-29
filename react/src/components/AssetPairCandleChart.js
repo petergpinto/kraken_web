@@ -1,13 +1,166 @@
 import React, { Component, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ls from 'local-storage';
-import {CanvasJSChart} from 'canvasjs-react-charts'
+//import {CanvasJSChart, CanvasJS} from 'canvasjs-react-charts'
+import CanvasJSReact from '../assets/canvasjs.react';
+var CanvasJS = CanvasJSReact.CanvasJS;
+var CanvasJSChart = CanvasJSReact.CanvasJSChart;
+import CanvasJSReactStock from '../assets/canvasjs.stock.react';
+var CanvasJSStock = CanvasJSReactStock.CanvasJS;
+var CanvasJSStockChart = CanvasJSReactStock.CanvasJSStockChart;
 
-import Chart from 'react-apexcharts';
+//import Chart from 'react-apexcharts';
 
 import NavigationBar from './NavigationBar';
 
 import './css/AssetPairCandleChart.css';
+
+const chartRangeSelector = {
+	selectedRangeButtonIndex: 6,
+    buttons: [
+    {
+    	label: "1 Hour",
+    	range: 1,
+    	rangeType: "hour"
+    },{
+    	label: "3 Hours",
+    	range: 3,
+    	rangeType: "hour"
+    },{
+    	label: "12 Hours",
+    	range: 12,
+    	rangeType: "hour"
+    },{
+    	label: "1 Day",
+    	range: 1,
+    	rangeType: "day"
+    },{
+    	label: "1 Week",
+    	range: 1,
+    	rangeType: "week"
+    },{
+    	label: "1 Month",
+    	range: 1,
+    	rangeType: "month"
+    },{
+    	label: "All",
+    	range: 1,
+    	rangeType: "all"
+    }]
+};
+
+
+function makeOptions(title, ohlc_data, volume_data, signals) {
+
+return {
+    theme: "light2",
+    title: { text:title },
+    charts: [{
+        axisY: {
+            includeZero:false,
+            title:"Prices",
+            tickLength: 0
+        },
+        axisX: {
+            lineThickness: 5,
+            tickLength: 0,
+            labelFormatter: function(e) {
+                return "";
+            },
+            crosshair: {
+                enabled: true,
+                snapToDataPoint: true,
+                labelFormatter: function(e) {
+                    return "";
+                }
+            }
+        },
+        data:[ {
+            name: "Price",
+            type: 'candlestick',
+            dataPoints: ohlc_data
+        }]
+    },{
+        height:100,
+        axisX: {
+            crosshair: {
+                enabled: true,
+                snapToDataPoint: true
+            }
+        },
+        axisY: {
+            title:"Volume",
+            tickLength:0
+        },
+        data: [{
+            dataPoints: volume_data
+        }],
+
+    },{ 
+		height:100,
+		axisX: {
+			labelFormatter: function(e) { return ""; },
+			crosshair: {
+				enabled:true,
+				snapToDataPoint: true,
+			}
+		},
+		axisY: {
+			title:"Indicators",
+			tickLength:0
+		},
+		data: [{
+			type: 'scatter',
+			markerType: 'triangle',
+			markerColor: 'green',
+			toolTipContent: '<span>{indicator}</span>',
+			dataPoints: [] //TODO: Calculate indicators and add way to get them from DB
+		},{
+			type: 'scatter',
+			markerType: 'triangle',
+			markerColor:'red',
+			toolTipContent: '<span>{indicator}</span>',
+			dataPoints: []
+		}]
+	}],
+    rangeSelector:  {
+		
+    	selectedRangeButtonIndex: 6,
+    	buttons: [
+    	{
+       		label: "1 Hour",
+       		range: 1,
+       		rangeType: "hour"
+    	},{
+       		label: "3 Hours",
+       		range: 3,
+       		rangeType: "hour"
+    	},{
+       		label: "12 Hours",
+     		range: 12,
+      		rangeType: "hour"
+    	},{
+       		label: "1 Day",
+       		range: 1,
+       		rangeType: "day"
+    	},{
+       		label: "1 Week",
+       		range: 1,
+       		rangeType: "week"
+    	},{
+       		label: "1 Month",
+       		range: 1,
+       		rangeType: "month"
+    	},{
+       		label: "All",
+       		range: 1,
+     		rangeType: "all"
+    	}]
+	}
+	
+	}
+}
+
 
 //This requires a prop "assetpair" when the component is used
 class AssetPairCandleChart extends Component {
@@ -18,69 +171,46 @@ class AssetPairCandleChart extends Component {
 		this.getPairOHLCData = this.getPairOHLCData.bind(this);
 
 		this.state = {
-			loading:true,
+			loading:"initial",
 			data: [],
-			series: [{
-				data:[ ]
-			}],
-			options: {
-				chart: {
-					type:'candlestick',
-					animations: {
-						enabled:false
-					}
-				},
-				title: {
-					text: this.props.title,
-					align: 'left'
-				},
-				xaxis: {
-					type: 'datetime'
-				},
-				yaxis: {
-					tooltip: {
-						enabled:true
-					}
-				},
-				dataLabels: {
-					enabled:false
-				},
-				markers: {
-					size:0
-				}
-			}
+			options: {}
 		};
+	}
+
+
+	getPairSignalData() {
+		let data = new URLSearchParams();
+		data.append("pairId", this.props.pairid);
+
+		return fetch(window.origin + "/api/Signals", {
+			method:"POST",
+			headers: {
+				'Accept':"application/json"
+			},
+			body:data
+		}).then(res => res.json())
+		.then(json => {
+			let buy = [];
+			let sell = [];
+			let signals = {};
+			let entries = Object.entries(json);
+			return json;
+		});
 	}
 
 	getPairOHLCData() {
 		let data = new URLSearchParams();
 		data.append("pairId", this.props.pairid);
-		if(ls.get(this.props.pairid+"ChartData")) {
-			this.setState({
-                    options : {
-                        title: { text:this.props.title },
-                        axisY: {
-                            includeZero:false,
-                            title:"Prices"
-                        },
-                        axisX: {
-                            interval:1,
-                            valueFormatString:"MMM-DD"
-                        },
-                        data:[ {
-                            type: 'ohlc',
-                            color:'brown',
-                            dataPoints: ls.get(this.props.pairid+"ChartData")
-                        }]
-                    }
-                });
 
+		let ohlcData = ls.get(this.props.pairid+"ChartData");
+		let volumeData = ls.get(this.props.pairid+"VolumeData");
+		if(ohlcData && volumeData) {
+			ohlcData = ohlcData.map((el) => { return { x: new Date(el.x), y:el.y } } )
+			volumeData = volumeData.map((el) => { return { x: new Date(el.x), y:el.y } } )
 			this.setState({
-				series: [{
-					data: ls.get(this.props.pairid+"ChartData")	
-				}]
+                    options : makeOptions(this.props.title, ohlcData, volumeData)
 			});
-			this.setState({ loading:false });
+			this.setState({ loading:"updating" });
 		}
 
 		return fetch(window.origin + "/api/OHLC", {
@@ -92,39 +222,29 @@ class AssetPairCandleChart extends Component {
 			})
 			.then(res => res.json())
 			.then(json => {
+				let signals = {buy:[], sell:[]};
 				let s = [];
+				let volume = [];
 				let entries = Object.entries(json).map((el) => el[1])
 				for(let i in entries) {
 					s.push({
 						x: new Date(entries[i].timestamp),
 						y: [entries[i].open, entries[i].high, entries[i].low, entries[i].close]
 					})
+					volume.push({
+						x: new Date(entries[i].timestamp),
+						y: entries[i].volume
+					});
 				}
 				this.setState({
-					series: [{
-						data:s
-					}]
+					options : makeOptions(this.props.title, s, volume, signals) 
 				});
-				this.setState({
-					options : {
-						title: { text:this.props.title },
-						axisY: {
-							includeZero:false,
-							title:"Prices"
-						},	
-						axisX: {
-							interval:1,
-							valueFormatString:"MMM-DD"
-						},
-						data:[ {
-							type: 'ohlc',
-							color:'brown',
-							dataPoints: s
-						}]
-					}
-				});
-				this.setState({ loading:false });
+				this.setState({ loading:"done" });
+				
+				ls.remove(this.props.pairid+"ChartData");
 				ls.set(this.props.pairid+"ChartData", s);
+				ls.remove(this.props.pairid+"VolumeData");
+				ls.set(this.props.pairid+"VolumeData", volume);
 			});
 	}
 
@@ -137,7 +257,7 @@ class AssetPairCandleChart extends Component {
 	}
 
 	render() {
-		if(this.state.loading) {
+		if(this.state.loading == "initial") {
 			return (
 				<div>
 					<h3>Waiting for data...</h3><Loader style={{'width':'3vw', 'height':'auto'}} />
@@ -147,7 +267,8 @@ class AssetPairCandleChart extends Component {
 
 		return (
 			<div>
-				<CanvasJSChart options={this.state.options} />
+				{this.state.loading == "updating"? <div style={{ 'display':'block' }} ><h4 style={{ 'display':'inline' }} >Updating chart data...</h4><Loader style={{ 'display':'inline', 'width':'1vw', 'height':'auto'}} /></div> : null }
+				<CanvasJSStockChart options={this.state.options} />
 				{false? <Chart options={this.state.options} series={this.state.series} type="candlestick" /> : null }
 			</div>
 		);
