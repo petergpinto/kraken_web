@@ -1,13 +1,9 @@
 module.exports = function (app, pool, util) {
-	app.get("/TEST", function (request, response) {
-		response.end("TEST");
-	})
 
 	app.get("/api/TradablePairs", async function(request, response) {
-		if(!request.session.loggedin) {
-			response.json({"Result":"Error, please login"})
-			return
-		}
+		if(!util.checkLogin(response, request.session))
+            return
+
 		if(request.query.pairs) {
 			getTradablePairsPromise = () => {
 				return new Promise((resolve, reject) => {	

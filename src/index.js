@@ -44,6 +44,9 @@ let util = require(__dirname + '/Utility.js');
 require("./AssetInfo.js")(app, pool, util);
 require("./SetPairInfo.js")(app, pool, util);
 require("./OHLC.js")(app, pool, util);
+require("./MovingAverage.js")(app, pool, util);
+require("./AccountInfo.js")(app, pool, util);
+require("./Signals.js")(app, pool, util);
 
 app.get('/', function(request, response) {
 	response.redirect("/login.html");

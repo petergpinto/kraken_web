@@ -1,9 +1,7 @@
 module.exports = function (app, pool, util) {
 	app.post("/api/SetTradingStatus", async function(request, response) {
-		if(!request.session.loggedin) {
-            response.json({"Result":"Error, please login"})
+		if(!util.checkLogin(response, request.session))
             return
-        }
 
 		let pair = request.body.pair;
 		let pairStatus = request.body.pairStatus;
