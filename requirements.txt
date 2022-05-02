@@ -1,0 +1,6 @@
+numpy
+pandas
+pystan==2.18
+plotly
+mysql-connector-python
+python-dotenv
