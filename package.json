@@ -17,6 +17,7 @@
     "express-session": "^1.17.2",
     "kraken-api": "^1.0.1",
     "mysql2": "^2.3.3",
-    "node-kraken-api": "^2.2.0"
+    "node-kraken-api": "^2.2.0",
+    "speakeasy": "^2.0.0"
   }
 }
