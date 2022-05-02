@@ -113,14 +113,14 @@ return {
 			type: 'scatter',
 			markerType: 'triangle',
 			markerColor: 'green',
-			toolTipContent: '<span>{indicator}</span>',
-			dataPoints: [] //TODO: Calculate indicators and add way to get them from DB
+			toolTipContent: '<span>{metric}</span>',
+			dataPoints: signals.buy 
 		},{
 			type: 'scatter',
 			markerType: 'triangle',
 			markerColor:'red',
-			toolTipContent: '<span>{indicator}</span>',
-			dataPoints: []
+			toolTipContent: '<span>{metric}</span>',
+			dataPoints: signals.sell
 		}]
 	}],
     rangeSelector:  {
@@ -173,7 +173,10 @@ class AssetPairCandleChart extends Component {
 		this.state = {
 			loading:"initial",
 			data: [],
-			options: {}
+			options: makeOptions(this.props.title, [], [], []) ,
+			ohlc: [],
+			volume: [],
+			signals: []
 		};
 	}
 
@@ -193,8 +196,18 @@ class AssetPairCandleChart extends Component {
 			let buy = [];
 			let sell = [];
 			let signals = {};
-			let entries = Object.entries(json);
-			return json;
+			let entries = Object.entries(json).map((el) => el[1]);
+			for( let i in entries) {
+				if(entries[i].type == "B") {
+					buy.push( { x: new Date(entries[i].timestamp), y: .7, metric:entries[i].metric } );
+				} else {
+					sell.push( { x: new Date(entries[i].timestamp), y: .3, metric:entries[i].metric } );
+				}
+			}
+			signals['buy'] = buy;
+			signals['sell'] = sell;
+			console.log(signals);
+			this.setState({signals:signals});
 		});
 	}
 
@@ -207,9 +220,13 @@ class AssetPairCandleChart extends Component {
 		if(ohlcData && volumeData) {
 			ohlcData = ohlcData.map((el) => { return { x: new Date(el.x), y:el.y } } )
 			volumeData = volumeData.map((el) => { return { x: new Date(el.x), y:el.y } } )
+			/*
 			this.setState({
                     options : makeOptions(this.props.title, ohlcData, volumeData)
 			});
+			*/
+			this.setState({ ohlc: ohlcData });
+			this.setState({ volume: volumeData });
 			this.setState({ loading:"updating" });
 		}
 
@@ -236,9 +253,13 @@ class AssetPairCandleChart extends Component {
 						y: entries[i].volume
 					});
 				}
+				/*
 				this.setState({
 					options : makeOptions(this.props.title, s, volume, signals) 
 				});
+				*/
+				this.setState({ ohlc:s });
+				this.setState({ volume:volume });
 				this.setState({ loading:"done" });
 				
 				ls.remove(this.props.pairid+"ChartData");
@@ -251,9 +272,15 @@ class AssetPairCandleChart extends Component {
 
 	componentDidMount() {
 		this.getPairOHLCData();
+		this.getPairSignalData();
 	}	
 
-	componentDidUpdate() {
+	componentDidUpdate(prevProps, prevState) {
+		if(prevState.ohlc != this.state.ohlc 
+			|| prevState.volume != this.state.volume
+			|| prevState.signals!= this.state.signals) {
+			this.setState({options: makeOptions(this.props.title, this.state.ohlc, this.state.volume, this.state.signals)} );
+		}
 	}
 
 	render() {
