@@ -11,7 +11,7 @@ module.exports = function (app, pool, util) {
 
 		getSignalsPromise = () => {
                 return new Promise((resolve, reject) => {
-                pool.query('SELECT * FROM signals WHERE pairId=?)', [pairId,],
+                pool.query('SELECT * FROM signals WHERE pairId=?', [pairId,],
                     (error, elements) => {
                         if(error) return reject(error);
                         return resolve(elements);
