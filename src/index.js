@@ -1,6 +1,8 @@
 const mysql = require('mysql2');
 const express = require('express');
 const session = require('express-session');
+const ws = require('ws');
+const fs = require('fs');
 const cors = require('cors');
 const path = require('path');
 const url = require('url');
@@ -110,5 +112,17 @@ app.use('/react', function(request, response) {
 });
 
 
+const wsServer = new ws.Server({ 
+	noServer:true,
+	path: "/api/ws",
+});
+wsServer.on('connection', socket => {
+	socket.on('message', message => console.log(message));
+});
 
-app.listen(3001);
+const server = app.listen(3001);
+server.on('upgrade', (request, socket, head) => {
+	wsServer.handleUpgrade(request, socket, head, socket => {
+		wsServer.emit('connection', socket, request);
+	});
+})
